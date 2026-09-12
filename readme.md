@@ -7,7 +7,7 @@ EasyNuke provides universal commands for casting single target and area of effec
 ### change element: //cma ele `X`
 
 This will change the current active element to a different one. `X` can be one of these:
-- `fire`, `wind`, `thunder`, `ice`, `water`, `earth`
+- `fire`, `wind`, `thunder`, `ice`, `water`, `earth`,`light`,`dark`
   - sets the active element directly
 - `next`, `prev`
   - change active element to the next or previous in the above order
@@ -36,4 +36,4 @@ This will cast a spell based on the current active element.
 
 `level` will be the spell level number (e.g. 3 for `Water III`), unless you are casting `chain`, in which case it will be 1 or 2 for the first and second spell in the chain. This defaults to `1`.
 
-`target` can be anything found in the `<>` of a spell. (e.g. `stnpc` for `<stnpc>`). This defaults to `t`.
+`target` can be any standard target of a spell. (e.g. `<stnpc>` or `valaineral`). This defaults to `<me>` for storm, and `<t>` for all other spells.
