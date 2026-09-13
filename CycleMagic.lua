@@ -132,7 +132,7 @@ function handle_nuke_command(class, rank, target)
 	cast_spell(cur_index, class, rank, target)
 
 	temp_reset = os.time() + 7
-	if (temp_index == cur_index) then
+	if temp_index == cur_index then
 		-- increment temp so we don't cast the same element with a c-spell
 		increment_temp_index()
 	end
@@ -204,8 +204,8 @@ windower.register_event('addon command', function (command, ...)
 end)
 
 windower.register_event('prerender', function()
-	if (temp_reset == 0) then return end
-	if (os.time() < temp_reset) then return end
+	if temp_reset == 0 then return end
+	if os.time() < temp_reset then return end
 
 	temp_index = cur_index
 	temp_reset = 0
