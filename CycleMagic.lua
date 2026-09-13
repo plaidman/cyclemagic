@@ -93,18 +93,18 @@ local should_inc_temp = true
 function cast_spell(index, class, rank, target)
 	class = string.lower(class)
 
+	-- rank handling
 	if rank == nil then
 		rank = 1
-
 	elseif tonumber(rank) == nil then
 		-- a non-number was given for rank, it should be the target
 		target = rank
 		rank = 1
-
 	else
 		rank = tonumber(rank)
 	end
 
+	-- target handling
 	if target == nil then
 		target = (class == "storm") and "<me>" or "<t>"
 	end
@@ -118,27 +118,20 @@ function cast_spell(index, class, rank, target)
 	end
 
 	windower.chat.input("/ma \""..cur_spell_table[rank].."\" "..target)
+
+	temp_reset = os.time() + 7
+	if index == temp_index then
+		should_inc_temp = true
+	end
 end
 
 function handle_cnuke_command(class, rank, target)
 	-- remove 'c' prefix from type
-	class = string.sub(class, 2)
-	cast_spell(temp_index, class, rank, target)
-
-	-- tried to cast a c-nuke, extend temp reset timer
-	temp_reset = os.time() + 7
-
-	increment_temp_index()
+	cast_spell(temp_index, string.sub(class,2), rank, target)
 end
 
 function handle_nuke_command(class, rank, target)
 	cast_spell(cur_index, class, rank, target)
-
-	temp_reset = os.time() + 7
-	if temp_index == cur_index then
-		-- increment temp so we don't cast the same element with a c-spell
-		increment_temp_index()
-	end
 end
 
 function increment_temp_index()
@@ -224,5 +217,9 @@ windower.register_event('action', function(act)
 	if category ~= 4 then return end
 
 	windower.add_to_chat(8, 'Player successfully finished casting!')
-	should_inc_temp = true
+	
+	if should_inc_temp then
+		increment_temp_index()
+		should_inc_temp = false
+	end
 end)
