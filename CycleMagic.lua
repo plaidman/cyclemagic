@@ -5,13 +5,14 @@ _addon.command = "cma"
 
 require('tables')
 require('strings')
-local packets = require('packets')
+local texts = require('texts')
+local config = require('config')
 
-local ele_indices = T{fire=1,earth=2,water=3,wind=4,ice=5,thunder=6,light=7,dark=8}
 local elements = T{"fire","earth","water","wind","ice","thunder","light","dark"}
-
-spells = {
+local spells = {
 	fire = {
+		index = 1,
+		colors = {255,22,12},
 		nuke = {"Fire","Fire II","Fire III","Fire IV","Fire V","Fire VI"},
 		nukega = {"Firaga","Firaga II","Firaga III","Firaja"},
 		nukera = {"Fira","Fira II","Fira III"},
@@ -20,34 +21,9 @@ spells = {
 		storm = {"Firestorm","Firestorm II"},
 		chain = {"Stone","Fire"},
 	},
-	wind = {
-		nuke = {"Aero","Aero II","Aero III","Aero IV","Aero V","Aero VI"},
-		nukega = {"Aeroga","Aeroga II","Aeroga III","Aeroja"},
-		nukera = {"Aerora","Aerora II","Aerora III"},
-		ancient = {"Tornado","Tornado II"},
-		helix = {"Anemohelix","Anemohelix II"},
-		storm = {"Windstorm","Windstorm II"},
-		chain = {"Stone","Aero"},
-	},
-	thunder = {
-		nuke = {"Thunder","Thunder II","Thunder III","Thunder IV","Thunder V","Thunder VI"},
-		nukega = {"Thundaga","Thundaga II","Thundaga III","Thundaja"},
-		nukera = {"Thundara","Thundara II","Thundara III"},
-		ancient = {"Burst","Burst II"},
-		helix = {"Ionohelix","Ionohelix II"},
-		storm = {"Thunderstorm","Thunderstorm II"},
-		chain = {"Water","Thunder"},
-	},
-	ice = {
-		nuke = {"Blizzard","Blizzard II","Blizzard III","Blizzard IV","Blizzard V","Blizzard VI"},
-		nukega = {"Blizzaga","Blizzaga II","Blizzaga III","Blizzaja"},
-		nukera = {"Blizzara","Blizzara II","Blizzara III"},
-		ancient = {"Freeze","Freeze II"},
-		helix = {"Cryohelix","Cryohelix II"},
-		storm = {"Hailstorm","Hailstorm II"},
-		chain = {"Water","Blizzard"},
-	},
 	earth = {
+		index = 2,
+		colors = {255,255,28},
 		nuke = {"Stone","Stone II","Stone III","Stone IV","Stone V","Stone VI"},
 		nukega = {"Stonega","Stonega II","Stonega III","Stoneja"},
 		nukera = {"Stonera","Stonera II","Stonera III"},
@@ -57,6 +33,8 @@ spells = {
 		chain = {"Fire","Stone"},
 	},
 	water = {
+		index = 3,
+		colors = {0,150,255},
 		nuke = {"Water","Water II","Water III","Water IV","Water V","Water VI"},
 		nukega = {"Waterga","Waterga II","Waterga III","Waterja"},
 		nukera = {"Watera","Watera II","Watera III"},
@@ -65,7 +43,42 @@ spells = {
 		storm = {"Rainstorm","Rainstorm II"},
 		chain = {"Stone","Water"},
 	},
+	wind = {
+		index = 4,
+		colors = {51,255,20},
+		nuke = {"Aero","Aero II","Aero III","Aero IV","Aero V","Aero VI"},
+		nukega = {"Aeroga","Aeroga II","Aeroga III","Aeroja"},
+		nukera = {"Aerora","Aerora II","Aerora III"},
+		ancient = {"Tornado","Tornado II"},
+		helix = {"Anemohelix","Anemohelix II"},
+		storm = {"Windstorm","Windstorm II"},
+		chain = {"Stone","Aero"},
+	},
+	ice = {
+		index = 5,
+		colors = {0,255,255},
+		nuke = {"Blizzard","Blizzard II","Blizzard III","Blizzard IV","Blizzard V","Blizzard VI"},
+		nukega = {"Blizzaga","Blizzaga II","Blizzaga III","Blizzaja"},
+		nukera = {"Blizzara","Blizzara II","Blizzara III"},
+		ancient = {"Freeze","Freeze II"},
+		helix = {"Cryohelix","Cryohelix II"},
+		storm = {"Hailstorm","Hailstorm II"},
+		chain = {"Water","Blizzard"},
+	},
+	thunder = {
+		index = 6,
+		colors = {233,0,255},
+		nuke = {"Thunder","Thunder II","Thunder III","Thunder IV","Thunder V","Thunder VI"},
+		nukega = {"Thundaga","Thundaga II","Thundaga III","Thundaja"},
+		nukera = {"Thundara","Thundara II","Thundara III"},
+		ancient = {"Burst","Burst II"},
+		helix = {"Ionohelix","Ionohelix II"},
+		storm = {"Thunderstorm","Thunderstorm II"},
+		chain = {"Water","Thunder"},
+	},
 	light = {
+		index = 7,
+		colors = {255,255,255},
 		nuke = {"Fire","Fire II","Fire III","Fire IV","Fire V","Fire VI"},
 		nukega = {"Firaga","Firaga II","Firaga III","Firaja"},
 		nukera = {"Fira","Fira II","Fira III"},
@@ -75,6 +88,8 @@ spells = {
 		chain = {"Fire","Thunder"},
 	},
 	dark = {
+		index = 8,
+		colors = {135,135,135},
 		nuke = {"Stone","Stone II","Stone III","Stone IV","Stone V","Stone VI"},
 		nukega = {"Stonega","Stonega II","Stonega III","Stoneja"},
 		nukera = {"Stonera","Stonera II","Stonera III"},
@@ -85,10 +100,32 @@ spells = {
 	},
 }
 
+local defaults = {
+	pos = {x = 150,y = 175},
+	bg = {alpha = 192},
+	padding = 5
+}
+
+local settings = config.load(defaults)
+local display = texts.new('', settings)
+
 local cur_index = 1
 local temp_index = 1
 local temp_reset = 0
 local should_inc_temp = true
+
+function update_display()
+	local active = format_line("Active Element", elements[cur_index])
+	local temp = format_line("Temp Element", elements[temp_index])
+	display:text("Cycle Magic\n---------\n" .. active .. "\n" .. temp)
+end
+
+function format_line(prefix, element)
+	local colors = spells[element]["colors"]
+
+	return "\\cs(" .. colors[1] .. ","..colors[2] .. "," .. colors[3] .. ")"
+		.. prefix .. ": " .. string.ucfirst(element) .. "\\cr"
+end
 
 function cast_spell(index, class, rank, target)
 	class = string.lower(class)
@@ -117,7 +154,7 @@ function cast_spell(index, class, rank, target)
 		windower.add_to_chat(206, "Invalid Spell.") return
 	end
 
-	windower.chat.input("/ma \""..cur_spell_table[rank].."\" "..target)
+	windower.chat.input("/ma \"" .. cur_spell_table[rank] .. "\" " .. target)
 
 	temp_reset = os.time() + 7
 	if index == temp_index then
@@ -141,7 +178,7 @@ function increment_temp_index()
 	temp_index = temp_index + 1
 	if temp_index > #elements-2 then temp_index = 1 end
 	temp_reset = os.time() + 7
-	windower.add_to_chat(206, "Temp Element is now: "..string.ucfirst(elements[temp_index]))
+	update_display()
 end
 
 function handle_ele_command(_class, arg)
@@ -160,7 +197,7 @@ function handle_ele_command(_class, arg)
 		-- fall down to the show command
 
 	elseif elements:contains(arg) then
-		cur_index = ele_indices[arg] or 0
+		cur_index = spells[arg]["index"] or 0
 
 	else
 		windower.add_to_chat(206, "Invalid element.")
@@ -168,7 +205,7 @@ function handle_ele_command(_class, arg)
 	end
 
 	temp_index = cur_index
-	windower.add_to_chat(206, "Active Element is now: "..string.ucfirst(elements[cur_index]))
+	update_display()
 end
 
 handlers = {
@@ -188,6 +225,11 @@ handlers = {
 	ele = handle_ele_command,
 }
 
+windower.register_event('load', function()
+	update_display()
+	display:show()
+end)
+
 windower.register_event('addon command', function (command, ...)
 	local args = {...}
 
@@ -204,7 +246,7 @@ windower.register_event('prerender', function()
 
 	temp_index = cur_index
 	temp_reset = 0
-	windower.add_to_chat(206, "Temp Element has been reset: "..string.ucfirst(elements[cur_index]))
+	update_display()
 end)
 
 windower.register_event('action', function(act)
@@ -216,8 +258,6 @@ windower.register_event('action', function(act)
 	-- Category 4: Successfully finished casting a spell
 	if category ~= 4 then return end
 
-	windower.add_to_chat(8, 'Player successfully finished casting!')
-	
 	if should_inc_temp then
 		increment_temp_index()
 		should_inc_temp = false
