@@ -11,8 +11,6 @@ This will change the current active element to a different one. `X` can be one o
   - sets the active element directly
 - `next`, `prev`
   - change active element to the next or previous in the above order
-- `show`
-  - prints a message with the current active element
 
 ### cast a spell: //cma `type` `level` `target`
 
@@ -20,16 +18,19 @@ This will cast a spell based on the current active element.
 
 `type` can be one of:
 - `nuke`, `ancient`
-  - will cast the single target nuke to match the element
+  - will cast the single target nukes
+  - this will prefer to use a skillchain MB element
+  - otherwise it will cycle through elements
 - `nukega`, `nukera`
   - BLM and GEO AOE spells
-- `cnuke`, `cancient`, `cnukega`, `cnukera`
-  - uses a temporary element for these spells, without changing the active element
-  - cycle the temporary element with `//cma ele temp`
+  - chooses an element similar to 'nuke'
 - `helix`, `storm`
   - SCH spells
+  - helix will prefer the skillchain element, otherwise it'll use the active element
+  - storm will always use the active element
 - `chain`
   - first and second Immanence spells to chain, which can be bursted by the active element
+  - chain will always use the active element
 
 `level` will be the spell level number (e.g. 3 for `Water III`), unless you are casting `chain`, in which case it will be 1 or 2 for the first and second spell in the chain. This defaults to `1`.
 

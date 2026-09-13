@@ -107,6 +107,7 @@ function increment_temp_index()
 
 	should_inc_temp = false
 	temp_index = temp_index + 1
+	-- wrap around. but ignore light and dark, hence the -2
 	if temp_index > #elements-2 then temp_index = 1 end
 	temp_reset = os.time() + 7
 	update_display()
@@ -123,9 +124,6 @@ function handle_ele_command(_class, arg)
 	elseif arg == "prev" then
 		cur_index = cur_index - 1
 		if cur_index == 0 then cur_index = #elements end
-
-	elseif arg == "show" then
-		-- fall down to the show command
 
 	elseif elements:contains(arg) then
 		cur_index = spells[arg].index or 0
