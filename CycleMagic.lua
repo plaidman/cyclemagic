@@ -8,16 +8,14 @@ require('strings')
 local texts = require('texts')
 local config = require('config')
 
-local data = require('cycledata')
+local data = require('spellnames')
 local skillchains, elements, spells = data.skillchains, data.elements, data.spells
 
 local defaults = {
-	pos = {x = 150, y = 175},
-	bg = {alpha = 192},
-	padding = 5
+	display = {x = 150, y = 175, visible = true},
 }
 local settings = config.load(defaults)
-local display = texts.new('', settings)
+local display = nil
 
 local cur_index = 1
 local temp_index = 1
@@ -27,6 +25,8 @@ local last_skillchain = nil
 local skillchain_reset = 0
 
 function update_display()
+	if display == nil then return end;
+
 	local active = format_line("Active Element", elements[cur_index])
 	local temp = temp_reset == 0 and ""
 		or format_line("\nTemp Element", elements[temp_index])
@@ -148,19 +148,32 @@ local handlers = {
 	ele     = handle_ele_command,
 }
 
-windower.register_event('load', function()
-	update_display()
-	display:show()
-end)
+function handle_load_event()
+	if not settings.display.visible then return end
+	if windower.ffxi.get_player() == nil then return end
 
-windower.register_event('addon command', function (command, ...)
-	local args = {...}
+	if display == nil then
+		display = texts.new()
 
-	if handlers[command] then
-		handlers[command](command, unpack(args))
-	else
-		windower.add_to_chat(206, "Invalid command.")
+		display:pos_x(settings.display.x)
+		display:pos_y(settings.display.y)
+		display:visible(settings.display.visible)
+		display:bg_alpha(192)
+		display:pad(5)
 	end
+
+	update_display()
+end
+windower.register_event('load', handle_load_event)
+windower.register_event('login', handle_load_event)
+
+windower.register_event('logout', function()
+	settings.display.x = display:pos_x()
+	settings.display.y = display:pos_y()
+	config.save(settings, 'all')
+
+	display:destroy()
+	display = nil
 end)
 
 windower.register_event('prerender', function()
@@ -177,9 +190,19 @@ windower.register_event('prerender', function()
 	end
 end)
 
+windower.register_event('addon command', function (command, ...)
+	local args = {...}
+
+	if handlers[command] then
+		handlers[command](command, unpack(args))
+	else
+		windower.add_to_chat(206, "Invalid command.")
+	end
+end)
+
 windower.register_event('action', function(act)
-    local player = windower.ffxi.get_player()
-    if not player then return end
+	local player = windower.ffxi.get_player()
+	if not player then return end
 	if act.actor_id ~= player.id then return end
 
 	local category = act.category
@@ -196,10 +219,10 @@ windower.register_event('incoming chunk', function(id, original)
 	if id ~= 0x28 then return end
 
 	local action_packet = windower.packets.parse_action(original)
-	
+
 	for _, target in pairs(action_packet.targets) do
 		local battle_target = windower.ffxi.get_mob_by_target("bt")
-		
+
 		if battle_target == nil then return end
 		if target.id ~= battle_target.id then return end
 
@@ -207,7 +230,6 @@ windower.register_event('incoming chunk', function(id, original)
 			if action.add_effect_message < 288 then return end
 			if action.add_effect_message > 301 then return end
 
-			windower.add_to_chat(206, "Skillchain detected: " .. skillchains[action.add_effect_message].en)
 			last_skillchain = action.add_effect_message
 			skillchain_reset = os.time() + 10
 			update_display()
