@@ -8,104 +8,14 @@ require('strings')
 local texts = require('texts')
 local config = require('config')
 
-local elements = T{"fire","earth","water","wind","ice","thunder","light","dark"}
-local spells = {
-	fire = {
-		index = 1,
-		colors = {255,22,12},
-		nuke = {"Fire","Fire II","Fire III","Fire IV","Fire V","Fire VI"},
-		nukega = {"Firaga","Firaga II","Firaga III","Firaja"},
-		nukera = {"Fira","Fira II","Fira III"},
-		ancient = {"Flare","Flare II"},
-		helix = {"Pyrohelix","Pyrohelix II"},
-		storm = {"Firestorm","Firestorm II"},
-		chain = {"Stone","Fire"},
-	},
-	earth = {
-		index = 2,
-		colors = {255,255,28},
-		nuke = {"Stone","Stone II","Stone III","Stone IV","Stone V","Stone VI"},
-		nukega = {"Stonega","Stonega II","Stonega III","Stoneja"},
-		nukera = {"Stonera","Stonera II","Stonera III"},
-		ancient = {"Quake","Quake II"},
-		helix = {"Geohelix","Geohelix II"},
-		storm = {"Sandstorm","Sandstorm II"},
-		chain = {"Fire","Stone"},
-	},
-	water = {
-		index = 3,
-		colors = {0,150,255},
-		nuke = {"Water","Water II","Water III","Water IV","Water V","Water VI"},
-		nukega = {"Waterga","Waterga II","Waterga III","Waterja"},
-		nukera = {"Watera","Watera II","Watera III"},
-		ancient = {"Flood","Flood II"},
-		helix = {"Hydrohelix","Hydrohelix II"},
-		storm = {"Rainstorm","Rainstorm II"},
-		chain = {"Stone","Water"},
-	},
-	wind = {
-		index = 4,
-		colors = {51,255,20},
-		nuke = {"Aero","Aero II","Aero III","Aero IV","Aero V","Aero VI"},
-		nukega = {"Aeroga","Aeroga II","Aeroga III","Aeroja"},
-		nukera = {"Aerora","Aerora II","Aerora III"},
-		ancient = {"Tornado","Tornado II"},
-		helix = {"Anemohelix","Anemohelix II"},
-		storm = {"Windstorm","Windstorm II"},
-		chain = {"Stone","Aero"},
-	},
-	ice = {
-		index = 5,
-		colors = {0,255,255},
-		nuke = {"Blizzard","Blizzard II","Blizzard III","Blizzard IV","Blizzard V","Blizzard VI"},
-		nukega = {"Blizzaga","Blizzaga II","Blizzaga III","Blizzaja"},
-		nukera = {"Blizzara","Blizzara II","Blizzara III"},
-		ancient = {"Freeze","Freeze II"},
-		helix = {"Cryohelix","Cryohelix II"},
-		storm = {"Hailstorm","Hailstorm II"},
-		chain = {"Water","Blizzard"},
-	},
-	thunder = {
-		index = 6,
-		colors = {233,0,255},
-		nuke = {"Thunder","Thunder II","Thunder III","Thunder IV","Thunder V","Thunder VI"},
-		nukega = {"Thundaga","Thundaga II","Thundaga III","Thundaja"},
-		nukera = {"Thundara","Thundara II","Thundara III"},
-		ancient = {"Burst","Burst II"},
-		helix = {"Ionohelix","Ionohelix II"},
-		storm = {"Thunderstorm","Thunderstorm II"},
-		chain = {"Water","Thunder"},
-	},
-	light = {
-		index = 7,
-		colors = {255,255,255},
-		nuke = {"Fire","Fire II","Fire III","Fire IV","Fire V","Fire VI"},
-		nukega = {"Firaga","Firaga II","Firaga III","Firaja"},
-		nukera = {"Fira","Fira II","Fira III"},
-		ancient = {"Flare","Flare II"},
-		helix = {"Luminohelix","Luminohelix II"},
-		storm = {"Aurorastorm","Aurorastorm II"},
-		chain = {"Fire","Thunder"},
-	},
-	dark = {
-		index = 8,
-		colors = {135,135,135},
-		nuke = {"Stone","Stone II","Stone III","Stone IV","Stone V","Stone VI"},
-		nukega = {"Stonega","Stonega II","Stonega III","Stoneja"},
-		nukera = {"Stonera","Stonera II","Stonera III"},
-		ancient = {"Quake","Quake II"},
-		helix = {"Noctohelix","Noctohelix II"},
-		storm = {"Umbrastorm","Umbrastorm II"},
-		chain = {"Aero","Noctohelix"},
-	},
-}
+local data = require('cycledata')
+local skillchains, elements, spells = data.skillchains, data.elements, data.spells
 
 local defaults = {
-	pos = {x = 150,y = 175},
+	pos = {x = 150, y = 175},
 	bg = {alpha = 192},
 	padding = 5
 }
-
 local settings = config.load(defaults)
 local display = texts.new('', settings)
 
@@ -113,15 +23,21 @@ local cur_index = 1
 local temp_index = 1
 local temp_reset = 0
 local should_inc_temp = true
+local last_skillchain = nil
+local skillchain_reset = 0
 
 function update_display()
 	local active = format_line("Active Element", elements[cur_index])
-	local temp = format_line("Temp Element", elements[temp_index])
-	display:text("Cycle Magic\n---------\n" .. active .. "\n" .. temp)
+	local temp = temp_reset == 0 and ""
+		or format_line("\nTemp Element", elements[temp_index])
+	local sc = skillchain_reset == 0 and ""
+		or format_line("\nSkillchain", elements[skillchains[last_skillchain].index])
+
+	display:text("Cycle Magic\n---------\n" .. active .. temp .. sc)
 end
 
 function format_line(prefix, element)
-	local colors = spells[element]["colors"]
+	local colors = spells[element].colors
 
 	return "\\cs(" .. colors[1] .. ","..colors[2] .. "," .. colors[3] .. ")"
 		.. prefix .. ": " .. string.ucfirst(element) .. "\\cr"
@@ -162,13 +78,28 @@ function cast_spell(index, class, rank, target)
 	end
 end
 
-function handle_cnuke_command(class, rank, target)
-	-- remove 'c' prefix from type
-	cast_spell(temp_index, string.sub(class,2), rank, target)
+function handle_cycle_command(class, rank, target)
+	local index = temp_index
+
+	if last_skillchain then
+		index = skillchains[last_skillchain].index or index
+	end
+
+	cast_spell(index, class, rank, target)
 end
 
-function handle_nuke_command(class, rank, target)
+function handle_active_command(class, rank, target)
 	cast_spell(cur_index, class, rank, target)
+end
+
+function handle_helix_command(class, rank, target)
+	local index = cur_index
+
+	if last_skillchain then
+		index = skillchains[last_skillchain].index or index
+	end
+
+	cast_spell(index, class, rank, target)
 end
 
 function increment_temp_index()
@@ -197,7 +128,7 @@ function handle_ele_command(_class, arg)
 		-- fall down to the show command
 
 	elseif elements:contains(arg) then
-		cur_index = spells[arg]["index"] or 0
+		cur_index = spells[arg].index or 0
 
 	else
 		windower.add_to_chat(206, "Invalid element.")
@@ -208,21 +139,15 @@ function handle_ele_command(_class, arg)
 	update_display()
 end
 
-handlers = {
-	nuke = handle_nuke_command,
-	nukega = handle_nuke_command,
-	nukera = handle_nuke_command,
-	ancient = handle_nuke_command,
-	helix = handle_nuke_command,
-	storm = handle_nuke_command,
-	chain = handle_nuke_command,
-
-	cnuke = handle_cnuke_command,
-	cnukega = handle_cnuke_command,
-	cnukera = handle_cnuke_command,
-	cancient = handle_cnuke_command,
-
-	ele = handle_ele_command,
+local handlers = {
+	nuke    = handle_cycle_command,
+	nukega  = handle_cycle_command,
+	nukera  = handle_cycle_command,
+	ancient = handle_cycle_command,
+	storm   = handle_active_command,
+	chain   = handle_active_command,
+	helix   = handle_helix_command,
+	ele     = handle_ele_command,
 }
 
 windower.register_event('load', function()
@@ -241,12 +166,17 @@ windower.register_event('addon command', function (command, ...)
 end)
 
 windower.register_event('prerender', function()
-	if temp_reset == 0 then return end
-	if os.time() < temp_reset then return end
+	if temp_reset > 0 and os.time() >= temp_reset then
+		temp_index = cur_index
+		temp_reset = 0
+		update_display()
+	end
 
-	temp_index = cur_index
-	temp_reset = 0
-	update_display()
+	if skillchain_reset > 0 and os.time() >= skillchain_reset then
+		last_skillchain = nil
+		skillchain_reset = 0
+		update_display()
+	end
 end)
 
 windower.register_event('action', function(act)
@@ -261,5 +191,28 @@ windower.register_event('action', function(act)
 	if should_inc_temp then
 		increment_temp_index()
 		should_inc_temp = false
+	end
+end)
+
+windower.register_event('incoming chunk', function(id, original)
+	if id ~= 0x28 then return end
+
+	local action_packet = windower.packets.parse_action(original)
+	
+	for _, target in pairs(action_packet.targets) do
+		local battle_target = windower.ffxi.get_mob_by_target("bt")
+		
+		if battle_target == nil then return end
+		if target.id ~= battle_target.id then return end
+
+		for _, action in pairs(target.actions) do
+			if action.add_effect_message < 288 then return end
+			if action.add_effect_message > 301 then return end
+
+			windower.add_to_chat(206, "Skillchain detected: " .. skillchains[action.add_effect_message].en)
+			last_skillchain = action.add_effect_message
+			skillchain_reset = os.time() + 10
+			update_display()
+		end
 	end
 end)
