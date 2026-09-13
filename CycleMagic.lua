@@ -155,31 +155,40 @@ local handlers = {
 }
 
 function handle_load_event()
+	local player = windower.ffxi.get_player()
+
 	if not settings.display.visible then return end
-	if windower.ffxi.get_player() == nil then return end
+	if player == nil then return end
 
 	if display == nil then
 		display = texts.new()
 
 		display:pos_x(settings.display.x)
 		display:pos_y(settings.display.y)
-		display:visible(settings.display.visible)
 		display:bg_alpha(192)
 		display:pad(5)
 	end
 
+	display:visible(player.status == 1)
 	update_display()
 end
 windower.register_event('load', handle_load_event)
 windower.register_event('login', handle_load_event)
 
 windower.register_event('logout', function()
+	if display == nil then return end
+
 	settings.display.x = display:pos_x()
 	settings.display.y = display:pos_y()
 	config.save(settings, 'all')
 
 	display:destroy()
 	display = nil
+end)
+
+windower.register_event('status change', function(new_status_id, old_status_id)
+	if display == nil then return end
+	display:visible(new_status_id == 1)
 end)
 
 windower.register_event('prerender', function()
