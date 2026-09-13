@@ -27,20 +27,26 @@ local skillchain_reset = 0
 function update_display()
 	if display == nil then return end;
 
-	local active = format_line("Active Element", elements[cur_index])
-	local temp = temp_reset == 0 and ""
-		or format_line("\nTemp Element", elements[temp_index])
-	local sc = skillchain_reset == 0 and ""
-		or format_line("\nSkillchain", elements[skillchains[last_skillchain].index])
+	local active = "Active Element: " .. string.ucfirst(elements[cur_index])
+	active = color_line(active, elements[cur_index])
+
+	local temp = ""
+	if temp_reset ~= 0 then
+		temp = "\nTemp Element: " .. string.ucfirst(elements[temp_index])
+		temp = color_line(temp, elements[temp_index])
+	end
+
+	local sc = ""
+	if last_skillchain then
+		sc = "\nSkillchain: " .. skillchains[last_skillchain].en
+		sc = color_line(sc, elements[skillchains[last_skillchain].index])
+	end
 
 	display:text("Cycle Magic\n---------\n" .. active .. temp .. sc)
 end
 
-function format_line(prefix, element)
-	local colors = spells[element].colors
-
-	return "\\cs(" .. colors[1] .. ","..colors[2] .. "," .. colors[3] .. ")"
-		.. prefix .. ": " .. string.ucfirst(element) .. "\\cr"
+function color_line(line, element)
+	return spells[element].color .. line .. "\\cr"
 end
 
 function cast_spell(index, class, rank, target)

@@ -20,7 +20,7 @@ elements = T{"fire","earth","water","wind","ice","thunder","light","dark"}
 spells = {
     fire = {
         index = 1,
-        colors = {255,22,12},
+        color = "\\cs(255,22,12)",
         nuke = {"Fire","Fire II","Fire III","Fire IV","Fire V","Fire VI"},
         nukega = {"Firaga","Firaga II","Firaga III","Firaja"},
         nukera = {"Fira","Fira II","Fira III"},
@@ -31,7 +31,7 @@ spells = {
     },
     earth = {
         index = 2,
-        colors = {255,255,28},
+        color = "\\cs(255,255,28)",
         nuke = {"Stone","Stone II","Stone III","Stone IV","Stone V","Stone VI"},
         nukega = {"Stonega","Stonega II","Stonega III","Stoneja"},
         nukera = {"Stonera","Stonera II","Stonera III"},
@@ -42,7 +42,7 @@ spells = {
     },
     water = {
         index = 3,
-        colors = {0,150,255},
+        color = "\\cs(0,150,255)",
         nuke = {"Water","Water II","Water III","Water IV","Water V","Water VI"},
         nukega = {"Waterga","Waterga II","Waterga III","Waterja"},
         nukera = {"Watera","Watera II","Watera III"},
@@ -53,7 +53,7 @@ spells = {
     },
     wind = {
         index = 4,
-        colors = {51,255,20},
+        color = "\\cs(51,255,20)",
         nuke = {"Aero","Aero II","Aero III","Aero IV","Aero V","Aero VI"},
         nukega = {"Aeroga","Aeroga II","Aeroga III","Aeroja"},
         nukera = {"Aerora","Aerora II","Aerora III"},
@@ -64,7 +64,7 @@ spells = {
     },
     ice = {
         index = 5,
-        colors = {0,255,255},
+        color = "\\cs(0,255,255)",
         nuke = {"Blizzard","Blizzard II","Blizzard III","Blizzard IV","Blizzard V","Blizzard VI"},
         nukega = {"Blizzaga","Blizzaga II","Blizzaga III","Blizzaja"},
         nukera = {"Blizzara","Blizzara II","Blizzara III"},
@@ -75,7 +75,7 @@ spells = {
     },
     thunder = {
         index = 6,
-        colors = {233,0,255},
+        color = "\\cs(233,0,255)",
         nuke = {"Thunder","Thunder II","Thunder III","Thunder IV","Thunder V","Thunder VI"},
         nukega = {"Thundaga","Thundaga II","Thundaga III","Thundaja"},
         nukera = {"Thundara","Thundara II","Thundara III"},
@@ -86,7 +86,7 @@ spells = {
     },
     light = {
         index = 7,
-        colors = {255,255,255},
+        color = "\\cs(255,255,255)",
         nuke = {"Thunder","Thunder II","Thunder III","Thunder IV","Thunder V","Thunder VI"},
         nukega = {"Thundaga","Thundaga II","Thundaga III","Thundaja"},
         nukera = {"Thundara","Thundara II","Thundara III"},
@@ -97,7 +97,7 @@ spells = {
     },
     dark = {
         index = 8,
-        colors = {135,135,135},
+        color = "\\cs(135,135,135)",
         nuke = {"Blizzard","Blizzard II","Blizzard III","Blizzard IV","Blizzard V","Blizzard VI"},
         nukega = {"Blizzaga","Blizzaga II","Blizzaga III","Blizzaja"},
         nukera = {"Blizzara","Blizzara II","Blizzara III"},
