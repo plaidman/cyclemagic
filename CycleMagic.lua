@@ -88,6 +88,7 @@ spells = {
 local cur_index = 1
 local temp_index = 1
 local temp_reset = 0
+local should_inc_temp = true
 
 function cast_spell(index, class, rank, target)
 	class = string.lower(class)
@@ -126,6 +127,8 @@ function handle_cnuke_command(class, rank, target)
 
 	-- tried to cast a c-nuke, extend temp reset timer
 	temp_reset = os.time() + 7
+
+	increment_temp_index()
 end
 
 function handle_nuke_command(class, rank, target)
@@ -139,6 +142,9 @@ function handle_nuke_command(class, rank, target)
 end
 
 function increment_temp_index()
+	if not should_inc_temp then return end
+
+	should_inc_temp = false
 	temp_index = temp_index + 1
 	if temp_index > #elements-2 then temp_index = 1 end
 	temp_reset = os.time() + 7
@@ -159,10 +165,6 @@ function handle_ele_command(_class, arg)
 
 	elseif arg == "show" then
 		-- fall down to the show command
-
-	elseif arg == "temp" then
-		increment_temp_index()
-		return;
 
 	elseif elements:contains(arg) then
 		cur_index = ele_indices[arg] or 0
@@ -210,4 +212,17 @@ windower.register_event('prerender', function()
 	temp_index = cur_index
 	temp_reset = 0
 	windower.add_to_chat(206, "Temp Element has been reset: "..string.ucfirst(elements[cur_index]))
+end)
+
+windower.register_event('action', function(act)
+    local player = windower.ffxi.get_player()
+    if not player then return end
+	if act.actor_id ~= player.id then return end
+
+	local category = act.category
+	-- Category 4: Successfully finished casting a spell
+	if category ~= 4 then return end
+
+	windower.add_to_chat(8, 'Player successfully finished casting!')
+	should_inc_temp = true
 end)

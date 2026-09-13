@@ -11,9 +11,6 @@ This will change the current active element to a different one. `X` can be one o
   - sets the active element directly
 - `next`, `prev`
   - change active element to the next or previous in the above order
-- `temp`
-  - cycle the temporary element for `c-` spells below
-  - resets back to the active element after a short while
 - `show`
   - prints a message with the current active element
 
