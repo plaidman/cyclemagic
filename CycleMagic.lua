@@ -7,8 +7,8 @@ require('tables')
 require('strings')
 local packets = require('packets')
 
-local ele_indices = T{fire=1,wind=2,thunder=3,earth=4,ice=5,water=6,light=7,dark=8}
-local elements = T{"fire","wind","thunder","earth","ice","water","light","dark"}
+local ele_indices = T{fire=1,earth=2,water=3,wind=4,ice=5,thunder=6,light=7,dark=8}
+local elements = T{"fire","earth","water","wind","ice","thunder","light","dark"}
 
 spells = {
 	fire = {
