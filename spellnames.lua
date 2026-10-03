@@ -1,4 +1,4 @@
-skillchains = {
+local skillchains = {
     [288] = {id=288,en='Light (Thunder)',index=6},
     [289] = {id=289,en='Darkness (Ice)',index=5},
     [290] = {id=290,en='Grav. (Earth)',index=2},
@@ -15,9 +15,9 @@ skillchains = {
     [301] = {id=301,en='Impac. (Thunder)', index=6}
 }
 
-elements = T{"fire","earth","water","wind","ice","thunder","light","dark"}
+local elements = T{"fire","earth","water","wind","ice","thunder","light","dark"}
 
-spells = {
+local spells = {
     fire = {
         index = 1,
         color = "\\cs(255,22,12)",
@@ -27,6 +27,7 @@ spells = {
         ancient = {"Flare","Flare II"},
         helix = {"Pyrohelix","Pyrohelix II"},
         storm = {"Firestorm","Firestorm II"},
+        enspell = {"Enfire","Enfire II"},
         chain = {"Stone","Fire"},
     },
     earth = {
@@ -38,6 +39,7 @@ spells = {
         ancient = {"Quake","Quake II"},
         helix = {"Geohelix","Geohelix II"},
         storm = {"Sandstorm","Sandstorm II"},
+        enspell = {"Enstone","Enstone II"},
         chain = {"Fire","Stone"},
     },
     water = {
@@ -49,6 +51,7 @@ spells = {
         ancient = {"Flood","Flood II"},
         helix = {"Hydrohelix","Hydrohelix II"},
         storm = {"Rainstorm","Rainstorm II"},
+        enspell = {"Enwater","Enwater II"},
         chain = {"Stone","Water"},
     },
     wind = {
@@ -60,6 +63,7 @@ spells = {
         ancient = {"Tornado","Tornado II"},
         helix = {"Anemohelix","Anemohelix II"},
         storm = {"Windstorm","Windstorm II"},
+        enspell = {"Enaero","Enaero II"},
         chain = {"Stone","Aero"},
     },
     ice = {
@@ -71,6 +75,7 @@ spells = {
         ancient = {"Freeze","Freeze II"},
         helix = {"Cryohelix","Cryohelix II"},
         storm = {"Hailstorm","Hailstorm II"},
+        enspell = {"Enblizzard","Enblizzard II"},
         chain = {"Water","Blizzard"},
     },
     thunder = {
@@ -82,6 +87,7 @@ spells = {
         ancient = {"Burst","Burst II"},
         helix = {"Ionohelix","Ionohelix II"},
         storm = {"Thunderstorm","Thunderstorm II"},
+        enspell = {"Enthunder","Enthunder II"},
         chain = {"Water","Thunder"},
     },
     light = {
@@ -93,6 +99,7 @@ spells = {
         ancient = {"Burst","Burst II"},
         helix = {"Luminohelix","Luminohelix II"},
         storm = {"Aurorastorm","Aurorastorm II"},
+        enspell = {"Enthunder","Enthunder II"},
         chain = {"Fire","Thunder"},
     },
     dark = {
@@ -104,6 +111,7 @@ spells = {
         ancient = {"Freeze","Freeze II"},
         helix = {"Noctohelix","Noctohelix II"},
         storm = {"Umbrastorm","Umbrastorm II"},
+        enspell = {"Enblizzard","Enblizzard II"},
         chain = {"Aero","Noctohelix"},
     },
 }

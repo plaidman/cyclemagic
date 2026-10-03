@@ -65,7 +65,7 @@ function cast_spell(index, class, rank, target)
 
 	-- target handling
 	if target == nil then
-		target = (class == "storm") and "<me>" or "<t>"
+		target = T{"storm","enspell"}:contains(class) and "<me>" or "<t>"
 	end
 	target = string.lower(target)
 
@@ -119,9 +119,20 @@ function increment_temp_index()
 	update_display()
 end
 
+local ele_aliases = {
+	lightning = "thunder",
+	blizzard = "ice",
+	aero = "wind",
+	stone = "earth"
+}
+
 function handle_ele_command(_class, arg)
 	arg = arg or "next"
 	arg = string.lower(arg)
+
+	if ele_aliases[arg] then
+		arg = ele_aliases[arg]
+	end
 
 	if arg == "next" then
 		cur_index = cur_index + 1
@@ -132,7 +143,7 @@ function handle_ele_command(_class, arg)
 		if cur_index == 0 then cur_index = #elements end
 
 	elseif elements:contains(arg) then
-		cur_index = spells[arg].index or 0
+		cur_index = spells[arg].index or 1
 
 	else
 		windower.add_to_chat(206, "Invalid element.")
@@ -140,6 +151,7 @@ function handle_ele_command(_class, arg)
 	end
 
 	temp_index = cur_index
+	windower.add_to_chat(206, "Current element: " .. elements[cur_index])
 	update_display()
 end
 
@@ -150,6 +162,7 @@ local handlers = {
 	ancient = handle_cycle_command,
 	storm   = handle_active_command,
 	chain   = handle_active_command,
+	enspell = handle_active_command,
 	helix   = handle_helix_command,
 	ele     = handle_ele_command,
 }
@@ -230,6 +243,7 @@ windower.register_event('action', function(act)
 	end
 end)
 
+-- checks for skillchain start
 windower.register_event('incoming chunk', function(id, original)
 	if id ~= 0x28 then return end
 
