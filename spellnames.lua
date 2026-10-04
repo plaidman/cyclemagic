@@ -9,10 +9,10 @@ local skillchains = {
     [295] = {id=295,en='Liquef. (Fire)',index=1},
     [296] = {id=296,en='Indur. (Ice)',index=5},
     [297] = {id=297,en='Reverb. (Water)',index=3},
-    [298] = {id=298,en='Transf.', index=nil},
-    [299] = {id=299,en='Scis. (Earth)', index=2},
-    [300] = {id=300,en='Deton. (Wind)', index=4},
-    [301] = {id=301,en='Impac. (Thunder)', index=6}
+    [298] = {id=298,en='Transf.',index=nil},
+    [299] = {id=299,en='Scis. (Earth)',index=2},
+    [300] = {id=300,en='Deton. (Wind)',index=4},
+    [301] = {id=301,en='Impac. (Thunder)',index=6}
 }
 
 local elements = T{"fire","earth","water","wind","ice","thunder","light","dark"}

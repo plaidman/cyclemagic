@@ -190,21 +190,25 @@ end)
 windower.register_event('incoming chunk', function(id, original)
 	if id ~= 0x28 then return end
 
+	local battle_target = windower.ffxi.get_mob_by_target("bt")
+	if not battle_target then return end
+
 	local action_packet = windower.packets.parse_action(original)
+	if not action_packet or not action_packet.targets then return end
 
 	for _, target in pairs(action_packet.targets) do
-		local battle_target = windower.ffxi.get_mob_by_target("bt")
+		if target.id == battle_target.id and target.actions then
+			for _, action in pairs(target.actions) do
+				local msg = action.add_effect_message
 
-		if battle_target == nil then return end
-		if target.id ~= battle_target.id then return end
-
-		for _, action in pairs(target.actions) do
-			if action.add_effect_message < 288 then return end
-			if action.add_effect_message > 301 then return end
-
-			last_skillchain = action.add_effect_message
-			skillchain_reset = os.time() + 10
-			update_display()
+				if type(msg) == 'number' and msg >= 288 and msg <= 301
+					and skillchains[msg]
+				then
+					last_skillchain = msg
+					skillchain_reset = os.time() + 10
+					update_display()
+				end
+			end
 		end
 	end
 end)
