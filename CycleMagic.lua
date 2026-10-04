@@ -5,14 +5,39 @@ _addon.command = "cma"
 
 require('tables')
 require('strings')
+local texts = require('texts')
+local config = require('config')
 
 local data = require('spellnames')
-local elements, spells = data.elements, data.spells
+local skillchains, elements, spells = data.skillchains, data.elements, data.spells
+
+local defaults = {
+	display = {x = 150, y = 175, visible = true},
+}
+local settings = config.load(defaults)
+local display = nil
 
 local cur_index = 1
+local last_skillchain = nil
+local skillchain_reset = 0
 
-function handle_active_command(class, rank, target)
-	cast_spell(cur_index, class, rank, target)
+function update_display()
+	if display == nil then return end;
+
+	local active = "Active Element: " .. string.ucfirst(elements[cur_index])
+	active = color_line(active, elements[cur_index])
+
+	local sc = ""
+	if last_skillchain then
+		sc = "\nSkillchain: " .. skillchains[last_skillchain].en
+		sc = color_line(sc, elements[skillchains[last_skillchain].index])
+	end
+
+	display:text("Cycle Magic\n---------\n" .. active .. sc)
+end
+
+function color_line(line, element)
+	return spells[element].color .. line .. "\\cr"
 end
 
 function cast_spell(index, class, rank, target)
@@ -43,6 +68,20 @@ function cast_spell(index, class, rank, target)
 	end
 
 	windower.chat.input("/ma \"" .. cur_spell_table[rank] .. "\" " .. target)
+end
+
+function handle_mb_command(class, rank, target)
+	local index = cur_index
+
+	if last_skillchain then
+		index = skillchains[last_skillchain].index or index
+	end
+
+	cast_spell(index, class, rank, target)
+end
+
+function handle_active_command(class, rank, target)
+	cast_spell(cur_index, class, rank, target)
 end
 
 local ele_aliases = {
@@ -77,19 +116,65 @@ function handle_ele_command(_class, arg)
 	end
 
 	windower.add_to_chat(206, "Current element: " .. elements[cur_index])
+	update_display()
 end
 
 local handlers = {
-	nuke    = handle_active_command,
-	nukega  = handle_active_command,
-	nukera  = handle_active_command,
-	ancient = handle_active_command,
+	nuke    = handle_mb_command,
+	nukega  = handle_mb_command,
+	nukera  = handle_mb_command,
+	ancient = handle_mb_command,
+	helix   = handle_mb_command,
 	storm   = handle_active_command,
 	chain   = handle_active_command,
 	enspell = handle_active_command,
-	helix   = handle_active_command,
 	ele     = handle_ele_command,
 }
+
+function handle_load_event()
+	local player = windower.ffxi.get_player()
+
+	if not settings.display.visible then return end
+	if player == nil then return end
+
+	if display == nil then
+		display = texts.new()
+
+		display:pos_x(settings.display.x)
+		display:pos_y(settings.display.y)
+		display:bg_alpha(192)
+		display:pad(5)
+	end
+
+	display:visible(player.status == 1)
+	update_display()
+end
+windower.register_event('load', handle_load_event)
+windower.register_event('login', handle_load_event)
+
+windower.register_event('logout', function()
+	if display == nil then return end
+
+	settings.display.x = display:pos_x()
+	settings.display.y = display:pos_y()
+	config.save(settings, 'all')
+
+	display:destroy()
+	display = nil
+end)
+
+windower.register_event('status change', function(new_status_id, old_status_id)
+	if display == nil then return end
+	display:visible(new_status_id == 1)
+end)
+
+windower.register_event('prerender', function()
+	if skillchain_reset > 0 and os.time() >= skillchain_reset then
+		last_skillchain = nil
+		skillchain_reset = 0
+		update_display()
+	end
+end)
 
 windower.register_event('addon command', function (command, ...)
 	local args = {...}
@@ -98,5 +183,28 @@ windower.register_event('addon command', function (command, ...)
 		handlers[command](command, unpack(args))
 	else
 		windower.add_to_chat(206, "Invalid command.")
+	end
+end)
+
+-- checks for skillchain start
+windower.register_event('incoming chunk', function(id, original)
+	if id ~= 0x28 then return end
+
+	local action_packet = windower.packets.parse_action(original)
+
+	for _, target in pairs(action_packet.targets) do
+		local battle_target = windower.ffxi.get_mob_by_target("bt")
+
+		if battle_target == nil then return end
+		if target.id ~= battle_target.id then return end
+
+		for _, action in pairs(target.actions) do
+			if action.add_effect_message < 288 then return end
+			if action.add_effect_message > 301 then return end
+
+			last_skillchain = action.add_effect_message
+			skillchain_reset = os.time() + 10
+			update_display()
+		end
 	end
 end)
