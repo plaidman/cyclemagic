@@ -5,11 +5,11 @@ local skillchains = {
     [291] = {id=291,en='Frag. (Thunder)',index=6},
     [292] = {id=292,en='Dist. (Ice)',index=5},
     [293] = {id=293,en='Fusion (Fire)',index=1},
-    [294] = {id=294,en='Compr.',index=nil},
+    [294] = {id=294,en='Compr. (Dark)',index=8},
     [295] = {id=295,en='Liquef. (Fire)',index=1},
     [296] = {id=296,en='Indur. (Ice)',index=5},
     [297] = {id=297,en='Reverb. (Water)',index=3},
-    [298] = {id=298,en='Transf.',index=nil},
+    [298] = {id=298,en='Transf. (Light)',index=7},
     [299] = {id=299,en='Scis. (Earth)',index=2},
     [300] = {id=300,en='Deton. (Wind)',index=4},
     [301] = {id=301,en='Impac. (Thunder)',index=6}
